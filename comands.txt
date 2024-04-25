@@ -13,3 +13,8 @@ sptk lpc -l 200 -m 12 > SA188S02.lp
 - run_spkid lp
 
 - gmm_train -d work/lp -e lp -g ses007 -m 5 -N 20 -T 0.001 -i 0 lists/class/SES007.train
+- gmm_show ses007
+- FEAT=lp run_spkid train
+- FEAT=lp run_spkid test
+- FEAT=lp run_spkid casserr
+- plot_gmm_feat ses007  work/lp/BLOCK00/SES007/*.lp -x1 -y2

@@ -86,6 +86,26 @@ compute_lp() {
     done
 }
 
+compute_lpcc(){
+    db=$1
+    shift
+    for filename in $(sort $*); do
+        mkdir -p `dirname $w/$FEAT/$filename.$FEAT`
+        EXEC="wav2lpcc $LPCC_order $LPCC_cepstrum_order $db/$filename.wav $w/$FEAT/$filename.$FEAT"
+        echo $EXEC && $EXEC || exit 1
+    done
+}
+
+compute_mfcc(){
+    db=$1
+    shift
+    for filename in $(sort $*); do
+        mkdir -p `dirname $w/$FEAT/$filename.$FEAT`
+        EXEC="wav2mfcc $MFCC_order $MFCC_filter_bank $MFCC_freq $db/$filename.wav $w/$FEAT/$filename.$FEAT"
+        echo $EXEC && $EXEC || exit 1
+    done
+}
+
 #  Set the name of the feature (not needed for feature extraction itself)
 if [[ ! -v FEAT && $# > 0 && "$(type -t compute_$1)" = function ]]; then
     FEAT=$1

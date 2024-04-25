@@ -33,16 +33,85 @@ ejercicios indicados.
   principal (`sox`, `$X2X`, `$FRAME`, `$WINDOW` y `$LPC`). Explique el significado de cada una de las 
   opciones empleadas y de sus valores.
 
+    ```bash 
+    sox $inputfile -t raw -e signed -b 16 - | $X2X +sf | $FRAME -l 240 -p 80 | $WINDOW -l 240 -L 240 | $LPC -l 240 -m $lpc_order > $base.lp || exit 1
+    ```
+
+    >### sox: 
+    >Convierte la señal de entrada a reales en coma flotante de 16 bits sin cabecera (raw), y escribe el resultado en la salida estándar. 
+    >- -t: Tipo de fichero de audio (raw).
+    >- -e: Tipo de codificación (signed).
+    >- -b: Tamaño de la muestra codificada, en bits. (16)
+
+    >### $X2X: 
+    >Programa de SPTK que permite la conversión entre distintos formatos de datos. Hacemos esta operación en dos pasos porque x2x no permite leer ficheros en formato WAVE (o cualquier otro, solo permite RAW). En este caso +sf indica s (short, 2byte) y  f (float, 4byte).
+
+    >### $FRAME: 
+    >Divide la señal de entrada en tramas de 240 muestras (30 ms) con desplazamiento de ventana de 80 muestras (10 ms). Tener en cuenta que la frecuencia de muestreo es de 8 kHz.
+    >- -l: frame length (240).
+    >- -p: frame period (80).
+
+    >### $WINDOW: 
+    >Multiplica cada trama por la ventana de Blackman (opción por defecto).
+    >- -l: frame length of input (240).
+    >- -L: frame length of output (240).
+
+    >### $LPC: 
+    >Calcula los lpc_order primeros coeficientes de predicción lineal, precedidos por el factor de ganancia del predictor.
+    >- -l: frame length (240)
+    >- -m: order of LPC ($lpc_order)
+
+    >Vemos como finalmente el resultado del pipeline se redirecciona a un fichero temporal $base.lp, cuyo nombre es el mismo que el del script seguido del identificador del proceso (de este modo se consigue un fichero temporal único para cada ejecución).
+
+
 - Explique el procedimiento seguido para obtener un fichero de formato *fmatrix* a partir de los ficheros de
   salida de SPTK (líneas 45 a 51 del script `wav2lp.sh`).
 
+    ```bash 
+      # Main command for feature extration
+      sox $inputfile -t raw -e signed -b 16 - | $X2X +sf | $FRAME -l 240 -p 80 | $WINDOW -l 240 -L 240 |
+      $LPC -l 240 -m $lpc_order > $base.lp || exit 1
+    
+
+      # Our array files need a header with the number of cols and rows:
+      ncol=$((lpc_order+1)) # lpc p =>  (gain a1 a2 ... ap) 
+      nrow=`$X2X +fa < $base.lp | wc -l | perl -ne 'print $_/'$ncol', "\n";'`
+
+      # Build fmatrix file by placing nrow and ncol in front, and the data after them
+      echo $nrow $ncol | $X2X +aI > $outputfile
+      cat $base.lp >> $outputfile 
+    ```
+
+    >Una vez almacenado el resultado de la parametrización en un fichero temporal ($base.lp), hemos de almacenar la información en un fichero fmatrix. 
+    >- Numero de columnas = orden del predictor + 1. Hace falta añadir 1 ya que en el primer elemento del vector se almacena la ganancia de predicción -> (gain a1 a2 ... ap)
+    >- Numero de filas. Las extraemos del fichero obtenido. Lo hacemos convirtiendo la señal parametrizada a texto usando sox +fa, y contando el número de líneas, con el comando UNIX wc -l.
+    Esta obtención del número de filas depende de la logintud de la señal, la longitud y desplazamiento de la ventana, y la cadena de comandos que se ejecutan para obtener la parametrización.
+
   * ¿Por qué es más conveniente el formato *fmatrix* que el SPTK?
+
+    > Utilizando este formato se puede pasar de una señal de entrada que es un señal unidimensional (un vector) con las muestras de la señal de audio a una matriz en la que se tiene un fácil y rápido acceso a todos los datos almacenados. 
+    Además, tienen una correspondencia directa entre la posición en la matriz y el orden del coeficiente y número de trama, por lo que simplifica mucho su manipulación a la hora de trabajar. También ofrece información directa en la cabecera sobre el número de tramas y de coeficientes calculados
+
 
 - Escriba el *pipeline* principal usado para calcular los coeficientes cepstrales de predicción lineal
   (LPCC) en su fichero <code>scripts/wav2lpcc.sh</code>:
 
+    >Este es el pipeline principal:
+    ```bash 
+    sox $inputfile -t raw -e signed -b 16 - | $X2X +sf | $FRAME -l 240 -p 80 | $WINDOW -l 240 -L 240 |
+    $LPC -l 240 -m $lpc_order | $LPCC -m $lpc_order -M $cepstrum_order> $base.lpcc || exit 1
+    ```
+
+
 - Escriba el *pipeline* principal usado para calcular los coeficientes cepstrales en escala Mel (MFCC) en su
   fichero <code>scripts/wav2mfcc.sh</code>:
+
+    >Este es el pipeline principal:
+    ```bash 
+    sox $inputfile -t raw -e signed -b 16 - | $X2X +sf | $FRAME -l 240 -p 80 | $WINDOW -l 240 -L 240 |
+    $MFCC -l 240 -m $mfcc_order -n $filter_bank_order -s $freq > $base.mfcc|| exit 1
+    ```
+
 
 ### Extracción de características.
 

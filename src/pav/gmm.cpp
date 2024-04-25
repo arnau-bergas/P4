@@ -112,6 +112,7 @@ namespace upc
 
 		for (n=0; n<data.nrow(); ++n) {
 			/// \TODO Compute the logprob of a single frame of the input data; you can use gmm_logprob() above.
+			lprob += this->gmm_logprob(data[n]);
 		}
 		return lprob/data.nrow();
 	}

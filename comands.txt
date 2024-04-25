@@ -1,0 +1,15 @@
+sudo apt install sptk
+
+- copiar wav to P4/
+
+- sox SA188S02.wav -t RAW -e signed -b16 - | sptk x2x +sf | sptk frame -l 200 -p 100 |   
+sptk window -l 200 | 
+sptk lpc -l 200 -m 12 > SA188S02.lp 
+
+- sptk x2x +fa SA188S02.lp 
+
+- wav2lp 10 SA188S02.wav SA188S02.lp
+
+- run_spkid lp
+
+- gmm_train -d work/lp -e lp -g ses007 -m 5 -N 20 -T 0.001 -i 0 lists/class/SES007.train

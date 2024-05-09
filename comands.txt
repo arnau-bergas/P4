@@ -18,3 +18,5 @@ sptk lpc -l 200 -m 12 > SA188S02.lp
 - FEAT=lp run_spkid test
 - FEAT=lp run_spkid casserr
 - plot_gmm_feat ses007  work/lp/BLOCK00/SES007/*.lp -x1 -y2
+
+- gmm_verify -d work/lp/ -e lp -D work/gmm/lp/ -E gmm lists/gmm.list lists/verif/all.test lists/verif/all.test.candidates

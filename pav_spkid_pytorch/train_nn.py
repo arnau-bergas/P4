@@ -119,6 +119,7 @@ def main(opts):
     # save training config
     with open(os.path.join(opts.save_path, 'train.opts'), 'w') as opts_f:
         opts_f.write(json.dumps(vars(opts), indent=2))
+
     # Feed Forward Neural Network
     model = nn.Sequential(nn.Linear(dset.input_dim * dset.in_frames, opts.hsize),
                           nn.ReLU(),
@@ -128,6 +129,7 @@ def main(opts):
                           nn.ReLU(),
                           nn.Linear(opts.hsize, dset.num_spks),
                           nn.LogSoftmax(dim=1))
+    
     print('Created model:')
     print(model)
     print('-')
@@ -150,8 +152,7 @@ def main(opts):
                                              epoch, opts.log_freq)
         if best_val <= va_loss_[0]:
             patience -= 1
-            print('Val loss did not improve. Patience '
-                  '{}/{}.'.format(patience, opts.patience))
+            print('Val loss did not improve. Patience ''{}/{}.'.format(patience, opts.patience))
             if patience <= 0:
                 print('Breaking train loop: Out of patience')
                 break
@@ -159,12 +160,11 @@ def main(opts):
                                  'e{}_weights.ckpt'.format(epoch))
         else:
             # reset patience
-            print('Val loss improved {:.3f} -> {:.3f}'.format(best_val,
-                                                      va_loss_[0]))
+            print('Val loss improved {:.3f} -> {:.3f}'.format(best_val, va_loss_[0]))
             best_val = va_loss_[0]
             patience = opts.patience
-            mname = os.path.join(opts.save_path,
-                                 'bestval_e{}_weights.ckpt'.format(epoch))
+            mname = os.path.join(opts.save_path,'bestval_e{}_weights.ckpt'.format(epoch))
+
         # save model
         torch.save(model.state_dict(), mname)
         tr_loss += tr_loss_
@@ -176,8 +176,7 @@ def main(opts):
                  'va_loss':va_loss,
                  'va_acc':va_acc}
 
-        with open(os.path.join(opts.save_path,
-                               'train_stats.json'), 'w') as stats_f:
+        with open(os.path.join(opts.save_path,'train_stats.json'), 'w') as stats_f:
             stats_f.write(json.dumps(stats, indent=2))
 
         # plot training loss/acc and eval loss/acc

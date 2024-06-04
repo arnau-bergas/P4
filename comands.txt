@@ -16,7 +16,14 @@ sptk lpc -l 200 -m 12 > SA188S02.lp
 - gmm_show ses007
 - FEAT=lp run_spkid train
 - FEAT=lp run_spkid test
-- FEAT=lp run_spkid casserr
+- FEAT=lp run_spkid classerr
 - plot_gmm_feat ses007  work/lp/BLOCK00/SES007/*.lp -x1 -y2
 
 - gmm_verify -d work/lp/ -e lp -D work/gmm/lp/ -E gmm lists/gmm.list lists/verif/all.test lists/verif/all.test.candidates
+    - gmm_verify -d work/lp/ -e lp -D work/gmm/lp/ -E gmm lists/gmm.list lists/verif/all.test lists/verif/all.test.candidates | tee verif.log
+
+- spk_verif_score -9.5 verif.log
+
+- pearson work/lp/*/*/*
+
+- python3 pav_spkid_pytorch/train_nn.py --db_path work/lpcc --tr_list_file lists/class/all.train --va_list_file lists/class/all.test --ext lpcc --save_path neura1 --hsize 500 --lr 0.01

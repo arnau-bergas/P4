@@ -17,15 +17,16 @@ cleanup() {
    \rm -f $base.*
 }
 
-if [[ $# != 4 ]]; then
+if [[ $# != 5 ]]; then
    echo "$0 mfcc_order melfilter_bank_order input.wav output.lp"
    exit 1
 fi
 
 mfcc_order=$1
 melfilter_bank_order=$2
-inputfile=$3
-outputfile=$4
+freq=$3
+inputfile=$4
+outputfile=$5
 
 UBUNTU_SPTK=1
 if [[ $UBUNTU_SPTK == 1 ]]; then
@@ -44,13 +45,14 @@ fi
 
 # Main command for feature extration
 sox $inputfile -t raw -e signed -b 16 - | $X2X +sf | $FRAME -l 240 -p 80 | $WINDOW -l 240 -L 240 |
-	$MFCC -m $mfcc_order -n $melfilter_bank_order > $base.lp || exit 1
+	$MFCC -l 240 -m $mfcc_order -n $melfilter_bank_order -s $freq > $base.mfcc || exit 1
    
 
 # Our array files need a header with the number of cols and rows:
 ncol=$((mfcc_order)) # mfcc p =>  (gain a1 a2 ... ap) 
-nrow=`$X2X +fa < $base.lp | wc -l | perl -ne 'print $_/'$ncol', "\n";'`
+nrow=`$X2X +fa < $base.mfcc | wc -l | perl -ne 'print $_/'$ncol', "\n";'`
 
 # Build fmatrix file by placing nrow and ncol in front, and the data after them
 echo $nrow $ncol | $X2X +aI > $outputfile
-cat $base.lp >> $outputfile
+cat $base.mfcc >> $outputfile
+exit

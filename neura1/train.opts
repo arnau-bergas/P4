@@ -1,0 +1,18 @@
+{
+  "db_path": "work/lpcc",
+  "tr_list_file": "lists/class/all.train",
+  "va_list_file": "lists/class/all.test",
+  "ext": "lpcc",
+  "spk2idx": "cfg/spk2idx.json",
+  "batch_size": 1000,
+  "hsize": 500,
+  "in_frames": 21,
+  "patience": 10,
+  "lr": 0.01,
+  "momentum": 0.5,
+  "epoch": 20,
+  "log_freq": 20,
+  "save_path": "neura1",
+  "input_dim": 30,
+  "num_spks": 157
+}
